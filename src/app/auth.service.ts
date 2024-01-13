@@ -7,7 +7,7 @@ const authCodeFlowConfig: AuthConfig = {
   clientId: 'oidc-client',
   redirectUri: 'http://localhost:4200/home',
   scope: 'openid',
-  issuer: 'http://localhost:8080',
+  issuer: 'http://localhost:9999',
   responseType: 'code',
   showDebugInformation: true,
 };
@@ -16,7 +16,7 @@ const authCodeFlowConfig: AuthConfig = {
   providedIn: 'root',
 })
 export class AuthService {
-  private tokenEndpoint = 'http://localhost:8080/oauth2/token'; // Your token endpoint
+  private tokenEndpoint = 'http://localhost:9999/oauth2/token'; // Your token endpoint
   isUserLoggedIn: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   constructor(
