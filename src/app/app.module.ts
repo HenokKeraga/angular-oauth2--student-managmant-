@@ -10,6 +10,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { HomeComponent } from './home/home.component';
 import { StudentComponent } from './student/student.component';
 import { LoginComponent } from './login/login.component';
+import { CookieService } from 'ngx-cookie-service';
 
 @NgModule({
   declarations: [AppComponent, HeaderComponent, HomeComponent, StudentComponent, LoginComponent],
@@ -19,7 +20,7 @@ import { LoginComponent } from './login/login.component';
     OAuthModule.forRoot(),
     HttpClientModule,
   ],
-  providers: [],
+  providers: [CookieService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

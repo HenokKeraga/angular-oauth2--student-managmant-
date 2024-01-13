@@ -1,13 +1,14 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
+import { AuthConfig, OAuthService, OAuthStorage } from 'angular-oauth2-oidc';
+import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 const authCodeFlowConfig: AuthConfig = {
   clientId: 'oidc-client',
   redirectUri: 'http://localhost:4200/home',
   scope: 'openid',
-  issuer: 'http://localhost:9999',
+  issuer: 'http://localhost:8080',
   responseType: 'code',
   showDebugInformation: true,
 };
@@ -16,12 +17,14 @@ const authCodeFlowConfig: AuthConfig = {
   providedIn: 'root',
 })
 export class AuthService {
-  private tokenEndpoint = 'http://localhost:9999/oauth2/token'; // Your token endpoint
+  private tokenEndpoint = 'http://localhost:8080/oauth2/token'; // Your token endpoint
   isUserLoggedIn: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   constructor(
     private oauthService: OAuthService,
-    private httpClient: HttpClient
+    private httpClient: HttpClient,
+    private oauthStorage: OAuthStorage  ,
+    private cookieService:CookieService
   ) {}
 
   login() {
@@ -31,13 +34,22 @@ export class AuthService {
   }
   logout() {
     this.oauthService.logOut();
+    this.oauthStorage.removeItem('access_token');
+    this.oauthStorage.removeItem('PKCE_verifier');
+    this.oauthStorage.removeItem('nonce');
+    this.cookieService.set('test', 'Hello World');
+    this.cookieService.delete('JSESSIONID');
+    this.cookieService.deleteAll()
     this.isUserLoggedIn.next(false);
+
   }
 
   exchangeCodeForToken(code: string, pkceVerifier: string): Observable<any> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
       Authorization: 'Basic ' + btoa('oidc-client:secret'), // Base64 encode client credentials
+      'type':'opaque',
+      //  'type':'jwt'
     });
 
     const { clientId = '', redirectUri = '' } = authCodeFlowConfig;
@@ -50,6 +62,7 @@ export class AuthService {
       .set('grant_type', 'authorization_code')
       .set('redirect_uri', redirectUri) // Your redirect URI
       .set('code_verifier', pkceVerifier);
+
 
     return this.httpClient.post(this.tokenEndpoint, params.toString(), {
       headers,
